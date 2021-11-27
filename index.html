@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mail</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="jquery-3.6.0.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
+    <!-- Login -->
+    <div class="mail-sign-container">
+      <div class="mail-img">
+        <img src="assets/user-placeholder.png" alt="" />
+      </div>
+      <div class="mail-form">
+        <form action="">
+          <input
+            type="email"
+            name=""
+            placeholder="example@gmail.com"
+            value="example@gmail.com"
+            required
+            autocomplete="on"
+          />
+          <input
+            type="password"
+            name=""
+            placeholder="********"
+            value="123456"
+            required
+            autocomplete="on"
+          />
+          <button class="signIn">Agregar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sessions -->
+
+    <div class="mails-logged"></div>
+  </body>
+  <script>
+    $(() => {
+      $(".mail-form>form").on("submit", function (e) {
+        e.preventDefault();
+        const user = {
+          mail: $("input[type='email']").val(),
+          password: $("input[type='password']").val(),
+        };
+        //TODO - Call python script to check if mail/pass is correct
+        //pythonStuff()
+        createUserCard(user);
+      });
+
+      function createUserCard(user) {
+        const loggedMailContainer = $("<div/>", {
+          class: "mail-logged",
+          click: () => signIn(loggedMailContainer),
+        });
+
+        const deleteMailIcon = $("<i/>", {
+          class: "fas fa-minus-circle delete-mail",
+          click: () => removeMail(loggedMailContainer),
+        });
+
+        const mailImgCont = $("<div/>", {
+          class: "mail-img",
+          html: $("<img/>", {
+            src: "assets/user-placeholder.png",
+          }),
+        });
+
+        const mailName = $("<div/>", {
+          class: "mail-name",
+          html: $("<p/>", {
+            text: user.mail,
+          }),
+        });
+
+        loggedMailContainer.append(deleteMailIcon);
+        loggedMailContainer.append(mailImgCont);
+        loggedMailContainer.append(mailName);
+
+        $(".mails-logged").append(loggedMailContainer);
+        $("input[type='email']").val("");
+        $("input[type='password']").val("");
+      }
+
+      function removeMail(obj) {
+        obj.remove();
+      }
+
+      function signIn(obj) {
+        $(".mail-sign-container").addClass("transition");
+        $(".mails-logged").addClass("transition");
+      }
+    });
+  </script>
+</html>

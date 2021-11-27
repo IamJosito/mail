@@ -1,0 +1,100 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat&display=swap");
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+}
+
+/* SingIn */
+
+.mail-sign-container {
+  display: grid;
+  grid-template-columns: repeat(2 1fr);
+  width: 50%;
+  min-width: 250px;
+  max-width: 300px;
+  justify-content: center;
+  margin: 1em auto;
+  row-gap: 1em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  padding: 2em;
+  border-radius: 5px;
+}
+
+.mail-img {
+  display: flex;
+  justify-content: center;
+}
+
+.mail-img > img {
+  width: 20%;
+}
+
+.mail-form > form {
+  display: grid;
+  justify-items: center;
+  grid-template-columns: repeat(1 1fr);
+  row-gap: 1em;
+}
+
+.mail-form > form > input {
+  padding: 5px 10px;
+  border-radius: 5px;
+  outline-color: rgba(0, 0, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.mail-form > form > button {
+  width: 50%;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.transition {
+  transition: all 2s ease;
+  transform: translateX(-100vw);
+}
+
+
+/* Logged */
+
+.delete-mail {
+  justify-self: start;
+  width: 10%;
+  color:rgb(75, 75, 75) ;
+}
+
+.delete-mail:hover {
+  color: red;
+}
+
+.mails-logged {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: auto;
+  max-width: 60%;
+}
+
+.mail-logged {
+  display: grid;
+  grid-template-columns: repeat(2 1fr);
+  border: 1px solid black;
+  margin: auto 10px;
+  justify-items: center;
+  margin-bottom: 10px;
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 5px ;
+}
+
+.mail-logged .mail-img {
+  margin: 0 0 10px 0;
+}
+
+.mail-logged:hover {
+  background-color: rgba(158, 158, 158, 0.2);
+}
