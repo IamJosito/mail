@@ -100,8 +100,20 @@
       }
 
       function signIn(obj) {
-        $(".mail-sign-container").addClass("transition");
-        $(".mails-logged").addClass("transition");
+        $(".mail-sign-container")
+          .addClass("transition")
+          .delay(1000)
+          .queue(function (next) {
+            $(this).css({ display: "none" });
+            next();
+          });
+        $(".mails-logged")
+          .addClass("transition")
+          .delay(1000)
+          .queue(function (next) {
+            $(this).css({ display: "none" });
+            next();
+          });
       }
     });
   </script>
