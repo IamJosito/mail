@@ -47,6 +47,56 @@
     <!-- Sessions -->
 
     <div class="mails-logged"></div>
+
+    <!-- Logged Session -->
+
+    <div class="main-page transition-back">
+      <header>
+        <nav class="nav-header">
+          <ul>
+            <li class="go-back">
+              <i class="fas fa-arrow-circle-left"></i>
+            </li>
+            <li class="profile">
+              <img src="assets/user-placeholder.png" alt="" />
+            </li>
+          </ul>
+        </nav>
+      </header>
+
+      <div class="main-container">
+        <nav class="nav-side">
+          <ul>
+            <li class="active">Todos</li>
+            <li>Enviados</li>
+            <li>Agenda</li>
+            <li>Enviar Correo</li>
+          </ul>
+        </nav>
+
+        <main class="main-wrapper">
+          <div class="mail-card">
+            <span class="header"> Titulo </span>
+            <span class="body"> ejemplo@gmail.com </span>
+          </div>
+
+          <div class="mail-card">
+            <span class="header"> Titulo </span>
+            <span class="body"> ejemplo@gmail.com </span>
+          </div>
+
+          <div class="mail-card">
+            <span class="header"> Titulo </span>
+            <span class="body"> ejemplo@gmail.com </span>
+          </div>
+
+          <div class="mail-card">
+            <span class="header"> Titulo </span>
+            <span class="body"> ejemplo@gmail.com </span>
+          </div>
+        </main>
+      </div>
+    </div>
   </body>
   <script>
     $(() => {
@@ -102,19 +152,58 @@
       function signIn(obj) {
         $(".mail-sign-container")
           .addClass("transition")
-          .delay(1000)
+          .delay(500)
           .queue(function (next) {
             $(this).css({ display: "none" });
             next();
           });
         $(".mails-logged")
           .addClass("transition")
-          .delay(1000)
+          .delay(500)
           .queue(function (next) {
             $(this).css({ display: "none" });
             next();
           });
+
+        $(".main-page")
+          .css({ display: "block" })
+          .delay(500)
+          .queue(function (next) {
+            $(this).css({ transform: "translateX(0)" });
+            next();
+          });
       }
+
+      $(".go-back").on("click", () => {
+        $(".main-page")
+          .css({ transform: "translateX(100vw)" })
+          .delay(1000)
+          .queue(function (next) {
+            $(this).addClass("transition-back").css({ display: "none" });
+
+            $(".mail-sign-container")
+              .css({ display: "" })
+              .delay(10)
+              .queue(function (next) {
+                $(this).removeClass("transition");
+                next();
+              });
+
+            $(".mails-logged")
+              .css({ display: "" })
+              .delay(10)
+              .queue(function (next) {
+                $(this).removeClass("transition");
+                next();
+              });
+            next();
+          });
+      });
+
+      $(".nav-side>ul>li").on("click", function () {
+        $(".nav-side>ul>li").removeClass("active");
+        $(this).addClass("active");
+      });
     });
   </script>
 </html>
