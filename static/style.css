@@ -217,7 +217,7 @@ html {
   background-color: var(--secondary-color-hover);
 }
 
-.mail-card .body {
+.mail-card .from {
   font-size: .7em;
   color: var(--color-secondary);
 }

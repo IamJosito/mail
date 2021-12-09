@@ -61,6 +61,9 @@
             <li class="go-back">
               <i class="fas fa-arrow-circle-left"></i>
             </li>
+            <li>
+              <span id="mail">example@example.com</span>
+            </li>
             <li class="profile">
               <img
                 src="{{ url_for('static', filename='/assets/user-placeholder.png') }}"
@@ -72,6 +75,7 @@
       </header>
 
       <div class="main-container">
+        <!-- Sidebar -->
         <nav class="nav-side">
           <ul>
             <li class="active">Todos</li>
@@ -81,27 +85,8 @@
           </ul>
         </nav>
 
-        <main class="main-wrapper">
-          <div class="mail-card">
-            <span class="header"> Titulo </span>
-            <span class="body"> ejemplo@gmail.com </span>
-          </div>
-
-          <div class="mail-card">
-            <span class="header"> Titulo </span>
-            <span class="body"> ejemplo@gmail.com </span>
-          </div>
-
-          <div class="mail-card">
-            <span class="header"> Titulo </span>
-            <span class="body"> ejemplo@gmail.com </span>
-          </div>
-
-          <div class="mail-card">
-            <span class="header"> Titulo </span>
-            <span class="body"> ejemplo@gmail.com </span>
-          </div>
-        </main>
+        <!-- Show mails -->
+        <main class="main-wrapper"></main>
       </div>
     </div>
   </body>
@@ -125,12 +110,12 @@
         $.get("/fetch_mails", (res) => {
           if (res.status === 200) {
             const mails = String(res.mails).split(",");
-            mails.forEach(mail => {
+            mails.forEach((mail) => {
               const user = {
-                mail: mail
-              }
+                mail: mail,
+              };
               createUserCard(user);
-            })
+            });
           }
         });
       }
@@ -206,30 +191,9 @@
       }
 
       function signIn(obj) {
-        $(".mail-sign-container")
-          .addClass("transition")
-          .delay(500)
-          .queue(function (next) {
-            $(this).css({ display: "none" });
-            next();
-          });
-        $(".mails-logged")
-          .addClass("transition")
-          .delay(500)
-          .queue(function (next) {
-            $(this).css({ display: "none" });
-            next();
-          });
-
-        $(".main-page")
-          .css({ display: "block" })
-          .delay(500)
-          .queue(function (next) {
-            $(this).css({ transform: "translateX(0)" });
-            next();
-          });
         const mail = obj.children(".mail-name").children("p").html();
-        console.log(mail);
+        $("#mail").html(mail);
+        loadInbox(mail);
       }
 
       $(".go-back").on("click", () => {
@@ -276,6 +240,68 @@
           },
         });
       });
+
+      function loadInbox(mail) {
+        $.post("/get_inbox", { mail }, (res) => {
+          if (res.status === 200) {
+            for (
+              let index = 0;
+              index < Object.keys(res.mails).length;
+              index++
+            ) {
+              if(!res.mails[index].payload.includes("<!DOCTYPE")){
+                createMailCard(res.mails[index].from, res.mails[index].subject);
+              }
+            }
+          }
+        }).done(() => {
+          loadMailUi();
+        });
+      }
+
+      function loadMailUi() {
+        $(".mail-sign-container")
+          .addClass("transition")
+          .delay(500)
+          .queue(function (next) {
+            $(this).css({ display: "none" });
+            next();
+          });
+        $(".mails-logged")
+          .addClass("transition")
+          .delay(500)
+          .queue(function (next) {
+            $(this).css({ display: "none" });
+            next();
+          });
+
+        $(".main-page")
+          .css({ display: "block" })
+          .delay(500)
+          .queue(function (next) {
+            $(this).css({ transform: "translateX(0)" });
+            next();
+          });
+      }
+
+      function createMailCard(from, subject) {
+        const mainWrapper = $(".main-wrapper");
+        const mailCard = $("<div/>", {
+          class: "mail-card",
+        });
+        const headerTxt = $("<span/>", {
+          class: "from",
+          html: from,
+        });
+        const subjectTxt = $("<span/>", {
+          class: "subject",
+          html: subject,
+        });
+        mailCard.append(headerTxt);
+        mailCard.append(subjectTxt);
+
+        mainWrapper.append(mailCard);
+      }
     });
   </script>
 </html>
