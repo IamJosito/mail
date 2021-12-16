@@ -31,7 +31,7 @@
             type="email"
             name=""
             placeholder="example@gmail.com"
-            value="pythontestwithale@gmail.com"
+            value=""
             required
             autocomplete="on"
           />
@@ -39,7 +39,7 @@
             type="password"
             name=""
             placeholder="********"
-            value="Python3WithAle"
+            value=""
             required
             autocomplete="on"
           />
@@ -78,7 +78,7 @@
         <!-- Sidebar -->
         <nav class="nav-side">
           <ul>
-            <li class="active">Todos</li>
+            <li>Todos</li>
             <li>Enviados</li>
             <li>Agenda</li>
             <li>Enviar Correo</li>
@@ -89,11 +89,43 @@
         <main class="main-wrapper"></main>
       </div>
     </div>
+
+    <div class="modal">
+      <div class="modal-container">
+        <div class="modal-title"></div>
+        <div class="modal-body"></div>
+      </div>
+    </div>
+    <div class="modal-loading"></div>
   </body>
   <script>
     let user;
     $(() => {
       fetchData();
+
+      $(".nav-side>ul>li").on("click", function () {
+        $(".nav-side>ul>li").removeClass("active");
+        $(this).addClass("active");
+        const mail = $("#mail").html();
+        $(".main-wrapper").removeClass("agenda");
+        $(".main-wrapper").html("");
+        switch ($(this).index()) {
+          case 0:
+            loadInbox(mail, "INBOX");
+            break;
+          case 1:
+            loadInbox(mail, "[Gmail]/Enviados");
+            break;
+          case 2:
+            loadAgenda();
+            break;
+          case 3:
+            sentMailUi();
+            break;
+          default:
+            break;
+        }
+      });
 
       $(".mail-form>form").on("submit", function (e) {
         e.preventDefault();
@@ -101,9 +133,7 @@
           mail: $("input[type='email']").val(),
           password: $("input[type='password']").val(),
         };
-        //TODO - Call python script to check if mail/pass is correct
         validateMail();
-        // createUserCard(user);
       });
 
       function fetchData() {
@@ -177,8 +207,8 @@
       }
 
       function clearMailForm() {
-        $("input[type='email']").val("vertederodepruebas@gmail.com");
-        $("input[type='password']").val("1a2s3d4f.");
+        $("input[type='email']").val("");
+        $("input[type='password']").val("");
       }
 
       function removeMail(obj) {
@@ -191,9 +221,11 @@
       }
 
       function signIn(obj) {
+        $(".nav-side>ul>li").removeClass("active");
+        $(".nav-side>ul>li:first-child").addClass("active");
         const mail = obj.children(".mail-name").children("p").html();
         $("#mail").html(mail);
-        loadInbox(mail);
+        loadInbox(mail, "INBOX");
       }
 
       $(".go-back").on("click", () => {
@@ -222,42 +254,37 @@
           });
       });
 
-      $(".nav-side>ul>li").on("click", function () {
-        $(".nav-side>ul>li").removeClass("active");
-        $(this).addClass("active");
-      });
-
-      $(".mail-card").on("click", () => {
-        $.ajax({
-          type: "GET",
-          url: "/get_mail",
-          dataType: "html",
-          success: function (msg) {
-            console.log(msg);
-          },
-          error: function (xhr, status, error) {
-            console.log(error);
-          },
-        });
-      });
-
-      function loadInbox(mail) {
-        $.post("/get_inbox", { mail }, (res) => {
+      let mails = [];
+      function loadInbox(mail, folder) {
+        mails = [];
+        $(".main-wrapper").html("");
+        $.post("/get_inbox", { mail, folder }, (res) => {
           if (res.status === 200) {
             for (
-              let index = 0;
-              index < Object.keys(res.mails).length;
-              index++
+              let index = Object.keys(res.mails).length-1;
+              index >= 0;
+              index--
             ) {
-              if(!res.mails[index].payload.includes("<!DOCTYPE")){
+              if (!res.mails[index].payload.includes("<!DOCTYPE")) {
+                mails.push(res.mails[index]);
                 createMailCard(res.mails[index].from, res.mails[index].subject);
               }
             }
+            console.log(mails);
           }
         }).done(() => {
           loadMailUi();
         });
       }
+
+      $(document).on({
+        ajaxStart: function () {
+          $("body").addClass("loading");
+        },
+        ajaxStop: function () {
+          $("body").removeClass("loading");
+        },
+      });
 
       function loadMailUi() {
         $(".mail-sign-container")
@@ -288,6 +315,7 @@
         const mainWrapper = $(".main-wrapper");
         const mailCard = $("<div/>", {
           class: "mail-card",
+          click: () => openMail(mailCard),
         });
         const headerTxt = $("<span/>", {
           class: "from",
@@ -301,6 +329,254 @@
         mailCard.append(subjectTxt);
 
         mainWrapper.append(mailCard);
+      }
+
+      $(".modal").on("click", (event) => {
+        if (!$(event.target).closest(".modal-container").length) {
+          closeModal();
+        }
+      });
+
+      function openMail(mailCard) {
+        $(".modal-title").html(mails[mailCard.index()].subject);
+        $(".modal-body").html(mails[mailCard.index()].payload);
+        $(".modal").css({
+          display: "flex",
+        });
+      }
+
+      function loadAgenda() {
+        const mainWrapper = $(".main-wrapper");
+        mainWrapper.addClass("agenda");
+
+        const btnAddContact = $("<div/>", {
+          text: "Agregar nuevo contacto",
+          class: "add-new-contact",
+          click: () => addContactUi(),
+        });
+
+        mainWrapper.append(btnAddContact);
+        fetchContacts();
+      }
+
+      function addContactUi() {
+        $(".modal-title").html("Agregar Contactos");
+        $(".modal-body").html("");
+        const form = $("<form/>", {
+          class: "add-new-contact-form",
+          submit: () => addContact(event),
+        });
+        const input = $("<input/>", {
+          placeholder: "ejemplo@gmail.com",
+          id: "addContactMail",
+        });
+        const button = $("<button/>", {
+          text: "Agregar",
+        });
+
+        form.append(input);
+        form.append(button);
+
+        $(".modal-body").append(form);
+
+        $(".modal").css({
+          display: "flex",
+        });
+      }
+
+      function addContact(e) {
+        e.preventDefault();
+        const contact = $("#addContactMail").val();
+        $.post("/add_contact", { mail: user.mail, contact }, (res) => {
+          switch (res.status) {
+            case 204:
+              closeModal();
+              fetchContacts();
+              break;
+            case 404:
+              alert("Contacto ya agregado");
+              break;
+            default:
+              break;
+          }
+        });
+      }
+
+      function fetchContacts() {
+        $.post("/fetch_contacts", { mail: user.mail }, (res) => {
+          switch (res.status) {
+            case 200:
+              const mainWrapper = $(".main-wrapper");
+              mainWrapper.html("");
+              const btnAddContact = $("<div/>", {
+                text: "Agregar nuevo contacto",
+                class: "add-new-contact",
+                click: () => addContactUi(),
+              });
+
+              mainWrapper.append(btnAddContact);
+              const contacts = String(res.contacts).split(",");
+              contacts.forEach((contact) => {
+                const agendaCard = $("<div/>", {
+                  class: "agenda-card",
+                });
+
+                const agendaMail = $("<span/>", {
+                  html: contact,
+                });
+
+                const agendaImg = $("<img/>", {
+                  src: "{{ url_for('static', filename='/assets/user-placeholder.png') }}",
+                  class: "agenda-img",
+                });
+                agendaCard.append(agendaImg);
+                agendaCard.append(agendaMail);
+
+                mainWrapper.append(agendaCard);
+              });
+          }
+        });
+      }
+
+      function sentMailUi() {
+        const mainWrapper = $(".main-wrapper");
+        mainWrapper.html("");
+
+        const form = $("<form/>", {
+          class: "send-mail-form",
+          submit: () => sendMail(event),
+        });
+        const labelTo = $("<label/>", {
+          for: "mailTo",
+          text: "To:",
+        });
+
+        const toContainer = $("<div/>", {
+          class: "to-input-container",
+        });
+
+        const inputTo = $("<input/>", {
+          placeholder: "ejemplo@gmail.com",
+          id: "mailTo",
+        });
+
+        const selectContactIcon = $("<i/>", {
+          class: "fas fa-address-book select-contact-icon",
+          click: () => selectContact(),
+        });
+
+        toContainer.append(inputTo);
+        toContainer.append(selectContactIcon);
+
+        const labelSubject = $("<label/>", {
+          for: "mailSubject",
+          text: "Subject:",
+        });
+        const inputSubject = $("<input/>", {
+          placeholder: "",
+          id: "mailSubject",
+        });
+
+        const labelBody = $("<label/>", {
+          for: "mailBody",
+          text: "Mensaje:",
+        });
+        const inputBody = $("<textarea/>", {
+          id: "mailBody",
+        });
+
+        const button = $("<button/>", {
+          text: "Enviar",
+        });
+
+        form.append(labelTo);
+        form.append(toContainer);
+
+        form.append(labelSubject);
+        form.append(inputSubject);
+
+        form.append(labelBody);
+        form.append(inputBody);
+
+        form.append(button);
+        mainWrapper.append(form);
+      }
+
+      function sendMail(e) {
+        e.preventDefault();
+        if ($("#mailTo").val() === "") {
+          $("#mailTo").addClass("input-error");
+          $("#mailTo").focus();
+        } else {
+          $("#mailTo").removeClass("input-error");
+          const mail = {
+            to: $("#mailTo").val(),
+            subject: $("#mailSubject").val(),
+            body: $("#mailBody").val(),
+          };
+          $.post(
+            "/send_mail",
+            {
+              from: user.mail,
+              to: mail.to,
+              subject: mail.subject,
+              body: mail.body,
+            },
+            (res) => {
+              switch (res.status) {
+                case 204:
+                  alert("Correo enviado correctamente");
+                  $("#mailTo").val("");
+                  $("#mailSubject").val("");
+                  $("#mailBody").val("");
+                  break;
+              }
+            }
+          );
+        }
+      }
+
+      function selectContact() {
+        $.post("/fetch_contacts", { mail: user.mail }, (res) => {
+          switch (res.status) {
+            case 200:
+              $(".modal-title").html("Contactos");
+              const contacts = String(res.contacts).split(",");
+              $(".modal-body").html("");
+              contacts.forEach((contact) => {
+                const contactCard = $("<div/>", {
+                  class: "agenda-card contact-card",
+                  text: contact,
+                  click: () => clickContact(contact),
+                });
+                $(".modal-body").append(contactCard);
+              });
+              $(".modal").css({
+                display: "flex",
+              });
+              break;
+            case 404:
+              $(".modal-title").html("Contactos");
+              $(".modal-body").html("No tienes contactos");
+              $(".modal").css({
+                display: "flex",
+              });
+              break;
+            default:
+              break;
+          }
+        });
+      }
+
+      function clickContact(contact) {
+        $("#mailTo").val(contact);
+        closeModal();
+      }
+
+      function closeModal() {
+        $(".modal").css({
+          display: "none",
+        });
       }
     });
   </script>
